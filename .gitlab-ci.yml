@@ -1,0 +1,9 @@
+stages:
+  - test
+
+test-job:
+  stage: test
+  script:
+    - echo "Test pipeline pour la plateforme AI"
+    - echo "Envoi des données au webhook..."
+    - echo "Pipeline exécuté avec succès !"
