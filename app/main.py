@@ -158,6 +158,7 @@ async def fetch_gitlab_logs(project_id: int, pipeline_id: int):
         print(f" Erreur fetch GitLab logs: {e}")
         return None
 
+# ==================== WEBHOOK GITLAB ====================
 @app.post("/webhook/gitlab")
 async def gitlab_webhook(request: Request, background_tasks: BackgroundTasks):
     """
@@ -192,6 +193,7 @@ async def gitlab_webhook(request: Request, background_tasks: BackgroundTasks):
     
     return {"status": "ignored"}
 
+# ==================== AJOUT POUR GÉRER LES REQUÊTES DE TEST GITLAB ====================
 @app.get("/webhook/gitlab")
 @app.head("/webhook/gitlab")
 async def gitlab_webhook_test():
