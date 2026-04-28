@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   postgres:
@@ -73,6 +72,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file:
+    - .env
     environment:
       DATABASE_URL: postgresql://admin:password123@postgres:5432/ai_platform
       REDIS_URL: redis://redis:6379
