@@ -1,9 +1,34 @@
+# .gitlab-ci.yml
 stages:
+  - predict
   - test
+  - build
+
+predict-before-build:
+  stage: predict
+  script:
+    - echo "🔮 Prédiction du risque d'échec..."
+    - |
+      curl -X POST http://host.docker.internal:8000/api/v1/ml/predict/simple \
+        -H "Content-Type: application/json" \
+        -d '{"pipeline_name": "gitlab-test-pipeline", "source": "gitlab-ci"}' \
+        -o prediction.json
+    - cat prediction.json
+  artifacts:
+    paths:
+      - prediction.json
+  allow_failure: true
 
 test-job:
   stage: test
   script:
-    - echo "Test pipeline pour la plateforme AI"
-    - echo "Envoi des données au webhook..."
-    - echo "Pipeline exécuté avec succès !"
+    - echo "🧪 Exécution des tests..."
+    - sleep 5
+    - echo "✅ Tests passés!"
+
+build-job:
+  stage: build
+  script:
+    - echo "🔨 Build..."
+    - sleep 3
+    - echo "✅ Build terminé!"
