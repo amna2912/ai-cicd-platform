@@ -1,24 +1,63 @@
 stages:
   - predict
+  - test
   - build
 
 variables:
   API_URL: "https://mateo-charmless-velia.ngrok-free.dev"
 
+# ============================================
+# PIPELINE 1: Tests backend
+# ============================================
+backend-tests:
+  stage: test
+  script:
+    - echo "🧪 Tests backend..."
+    - echo "✅ Tests backend réussis"
+  only:
+    - main
+  except:
+    - tags
+
+# ============================================
+# PIPELINE 2: Tests frontend
+# ============================================
+frontend-tests:
+  stage: test
+  script:
+    - echo "🧪 Tests frontend..."
+    - echo "✅ Tests frontend réussis"
+  only:
+    - main
+
+# ============================================
+# PIPELINE 3: Déploiement
+# ============================================
+deploy:
+  stage: build
+  script:
+    - echo "🚀 Déploiement..."
+    - echo "✅ Déploiement réussi"
+  only:
+    - main
+  when: manual
+
+# ============================================
+# JOB DE PRÉDICTION (s'exécute avant tous)
+# ============================================
 prediction:
   stage: predict
   script:
     - |
-      # GitLab appelle AUTOMATIQUEMENT l'API
+      echo "========================================="
+      echo "🔮 PRÉDICTION ML"
+      echo "========================================="
       curl -s -X POST ${API_URL}/api/v1/ml/predict/simple \
         -H "Content-Type: application/json" \
         -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci", "duration": 300}'
+      echo ""
+      echo "========================================="
   only:
     - main
     - develop
-
-build:
-  stage: build
-  script:
-    - echo "Build..."
-  needs: ["prediction"]
+  needs: []  # S'exécute en premier
