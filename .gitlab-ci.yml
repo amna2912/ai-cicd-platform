@@ -2,19 +2,23 @@ stages:
   - predict
   - build
 
-# Étape 1: Prédiction ML avant le build
-predict:
+variables:
+  API_URL: "https://mateo-charmless-velia.ngrok-free.dev"
+
+prediction:
   stage: predict
   script:
-    - echo "🔮 Appel à l'API de prédiction..."
     - |
-      curl -X POST "https://mateo-charmless-velia.ngrok-free.dev/api/v1/ml/predict/simple" \
+      # GitLab appelle AUTOMATIQUEMENT l'API
+      curl -s -X POST ${API_URL}/api/v1/ml/predict/simple \
         -H "Content-Type: application/json" \
-        -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci"}'
+        -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci", "duration": 300}'
+  only:
+    - main
+    - develop
 
-# Étape 2: Build réel (s'exécute si la prédiction est bonne)
 build:
   stage: build
   script:
-    - echo "🏗️ Build en cours..."
-    - echo "Build terminé avec succès!"
+    - echo "Build..."
+  needs: ["prediction"]
