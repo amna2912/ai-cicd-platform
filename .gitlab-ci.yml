@@ -1,23 +1,30 @@
 stages:
-  - predict
   - test
+  - predict
 
-variables:
-  API_URL: "https://mateo-charmless-velia.ngrok-free.dev"
-
-predict-before-build:
+# Étape 1: Prédiction avant de lancer les vrais tests
+predict-before-run:
   stage: predict
   script:
     - echo "🔮 Prédiction du risque d'échec..."
     - |
-      curl -X POST ${API_URL}/api/v1/ml/predict/simple \
+      curl -X POST "https://mateo-charmless-velia.ngrok-free.dev/api/v1/ml/predict/simple" \
         -H "Content-Type: application/json" \
-        -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci"}'
+        -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci"}' \
+        --max-time 5 || echo "Prédiction non disponible"
   allow_failure: true
 
-test-job:
+# Étape 2: Test qui va échouer (pour tester la prédiction)
+test-qui-echoue:
   stage: test
   script:
-    - echo "🧪 Tests en cours..."
-    - sleep 3
-    - echo "✅ Tests terminés!"
+    - echo "Test qui va échouer volontairement..."
+    - exit 1  # ← Ça force l'échec !
+
+# Étape 3: Test qui réussit
+test-qui-reussit:
+  stage: test
+  script:
+    - echo "Test qui réussit..."
+    - sleep 2
+    - echo "✅ OK"
