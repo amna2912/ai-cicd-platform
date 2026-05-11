@@ -1,34 +1,23 @@
-# .gitlab-ci.yml
 stages:
   - predict
   - test
-  - build
+
+variables:
+  API_URL: "https://mateo-charmless-velia.ngrok-free.dev"
 
 predict-before-build:
   stage: predict
   script:
     - echo "🔮 Prédiction du risque d'échec..."
     - |
-      curl -X POST http://host.docker.internal:8000/api/v1/ml/predict/simple \
+      curl -X POST ${API_URL}/api/v1/ml/predict/simple \
         -H "Content-Type: application/json" \
-        -d '{"pipeline_name": "gitlab-test-pipeline", "source": "gitlab-ci"}' \
-        -o prediction.json
-    - cat prediction.json
-  artifacts:
-    paths:
-      - prediction.json
+        -d '{"pipeline_name": "'"${CI_PROJECT_NAME}"'", "source": "gitlab-ci"}'
   allow_failure: true
 
 test-job:
   stage: test
   script:
-    - echo "🧪 Exécution des tests..."
-    - sleep 5
-    - echo "✅ Tests passés!"
-
-build-job:
-  stage: build
-  script:
-    - echo "🔨 Build..."
+    - echo "🧪 Tests en cours..."
     - sleep 3
-    - echo "✅ Build terminé!"
+    - echo "✅ Tests terminés!"
