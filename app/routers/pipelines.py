@@ -17,7 +17,7 @@ def get_pipelines(limit: int = 100, source: Optional[str] = None):
         params.append(source)
     query += " ORDER BY created_at DESC LIMIT %s"
     params.append(limit)
-    
+     
     cur.execute(query, params)
     pipelines = cur.fetchall()
     cur.close()

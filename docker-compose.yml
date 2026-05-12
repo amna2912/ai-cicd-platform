@@ -61,6 +61,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ai-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin 
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    networks:
+      - default
+    restart: unless-stopped
 
   app:
     build: ./app
@@ -88,3 +102,4 @@ volumes:
   redis_data:
   minio_data:
   jenkins_data:
+  grafana_data: 

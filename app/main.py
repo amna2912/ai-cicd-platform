@@ -1,4 +1,4 @@
-# app/main.py - Version corrigée
+# app/main.py - Version ultra simple sans ML
 from fastapi import FastAPI, Request, BackgroundTasks, HTTPException, Response
 import redis
 import psycopg2
@@ -89,7 +89,8 @@ async def save_pipeline(data: dict) -> str:
     print(f"✅ Pipeline saved: {data['name']} - {data['status']}")
     return pipeline_id
 
-# ==================== WEBHOOK GITHUB ====================
+# ==================== WEBHOOKS ====================
+
 @app.post("/webhook/github")
 async def github_webhook(request: Request):
     payload = await request.json()
@@ -98,7 +99,6 @@ async def github_webhook(request: Request):
     if request.headers.get("X-GitHub-Event") == "workflow_run":
         workflow = payload.get("workflow_run", {})
         
-        # Gestion du status (qui peut être null au début)
         status = workflow.get("conclusion")
         if not status:
             status = workflow.get("status", "unknown")
@@ -123,7 +123,6 @@ async def github_webhook(request: Request):
         return {"status": "received"}
     return {"status": "ignored"}
 
-# ==================== WEBHOOK GITLAB ====================
 @app.options("/webhook/gitlab")
 async def gitlab_options():
     return Response(
@@ -150,11 +149,15 @@ async def gitlab_webhook_post(request: Request):
         object_attrs = payload.get("object_attributes", {})
         project = payload.get("project", {})
         
+        duration = object_attrs.get("duration")
+        if duration is None:
+            duration = 0
+        
         pipeline_data = {
             "name": f"{project.get('name', 'unknown')} - Pipeline #{object_attrs.get('id')}",
             "source": "gitlab-ci",
             "status": object_attrs.get("status", "unknown"),
-            "duration": object_attrs.get("duration", 0),
+            "duration": duration,
             "started_at": object_attrs.get("created_at", datetime.now().isoformat()),
             "finished_at": object_attrs.get("finished_at"),
             "logs_url": object_attrs.get("url"),
@@ -165,7 +168,7 @@ async def gitlab_webhook_post(request: Request):
         return {"status": "received"}
     
     return {"status": "ignored"}
-# ==================== WEBHOOK JENKINS ====================
+
 @app.post("/webhook/jenkins")
 async def jenkins_webhook(request: Request):
     payload = await request.json()
@@ -185,6 +188,7 @@ async def jenkins_webhook(request: Request):
     return {"status": "received"}
 
 # ==================== API ENDPOINTS ====================
+
 @app.get("/")
 def root():
     return {
@@ -216,7 +220,10 @@ def health():
     except:
         redis_status = "error"
     
-    return {"database": db, "redis": redis_status, "app": "running"}
+    gitlab_token = os.getenv("GITLAB_TOKEN", "")
+    gitlab_status = "ok" if gitlab_token else "warning"
+    
+    return {"database": db, "redis": redis_status, "gitlab": gitlab_status, "app": "running"}
 
 @app.get("/api/v1/pipelines")
 def get_pipelines(limit: int = 100, source: Optional[str] = None):
